@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #F7F7F5;
+  --color-surface: #FFFFFF;
+  --color-ink: #1A1A17;
+  --color-ink-muted: #6B6B66;
+  --color-border: #E5E5E2;
+
+  --color-severity-red: #C54632;
+  --color-severity-red-bg: #FDF2F0;
+  --color-severity-orange: #B47214;
+  --color-severity-orange-bg: #FDF8EE;
+  --color-severity-green: #4D7B3D;
+  --color-severity-green-bg: #F2F8F0;
+
+  --font-sans: var(--font-inter);
+}
+
+:root {
+  --background: #F7F7F5;
+  --foreground: #1A1A17;
+  --radius: 0.5rem;
+
+  --card: #FFFFFF;
+  --card-foreground: #1A1A17;
+  --border: #E5E5E2;
+  --input: #E5E5E2;
+  --ring: #1A1A17;
+
+  --primary: #1A1A17;
+  --primary-foreground: #F7F7F5;
+  --secondary: #F0F0EE;
+  --secondary-foreground: #1A1A17;
+  --muted: #F0F0EE;
+  --muted-foreground: #6B6B66;
+  --accent: #F0F0EE;
+  --accent-foreground: #1A1A17;
+  --destructive: #C54632;
+  --destructive-foreground: #FFFFFF;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1A17;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
