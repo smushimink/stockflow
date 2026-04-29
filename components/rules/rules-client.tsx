@@ -4,9 +4,11 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
-import { ChevronDown, ChevronUp, Play } from "lucide-react";
+import { ChevronDown, ChevronUp, Play, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import type { DecisionRule } from "@/lib/supabase/types";
+import { recalculateMetrics } from "@/app/(dashboard)/rules/recalculate/action";
 
 const RULE_META: Record<string, { label: string; description: string; configurable: boolean }> = {
   reorder: { label: "01 Reorder point", description: "Alert when stock falls below minimum threshold", configurable: false },
@@ -31,6 +33,7 @@ export function RulesClient({ rules, orgId }: RulesClientProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [runResult, setRunResult] = useState<string | null>(null);
+  const [recalculating, setRecalculating] = useState(false);
 
   const supabase = createClient();
 
@@ -70,22 +73,49 @@ export function RulesClient({ rules, orgId }: RulesClientProps) {
     setRunning(false);
   }
 
+  async function handleRecalculate() {
+    setRecalculating(true);
+    const toastId = toast.loading("Recalculating metrics…");
+    const result = await recalculateMetrics();
+    if ("error" in result) {
+      toast.error(result.error, { id: toastId });
+    } else {
+      toast.success(
+        `Done in ${result.duration_ms}ms · ${result.products_updated} products · ${result.abc_updated} ABC classified · ${result.customers_updated} customers`,
+        { id: toastId, duration: 6000 }
+      );
+    }
+    setRecalculating(false);
+  }
+
   const orderedRules = Object.keys(RULE_META).map((key) => ruleStates[key]).filter(Boolean);
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between mb-4">
         <p className="text-xs text-[#6B6B66]">{orderedRules.length} rules configured</p>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={runAllRules}
-          disabled={running}
-          className="h-7 text-xs gap-1.5"
-        >
-          <Play size={10} />
-          {running ? "Running..." : "Run all now"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleRecalculate}
+            disabled={recalculating}
+            className="h-7 text-xs gap-1.5"
+          >
+            <RefreshCw size={10} className={recalculating ? "animate-spin" : ""} />
+            {recalculating ? "Recalculating…" : "Recalculate metrics"}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={runAllRules}
+            disabled={running}
+            className="h-7 text-xs gap-1.5"
+          >
+            <Play size={10} />
+            {running ? "Running..." : "Run all now"}
+          </Button>
+        </div>
       </div>
 
       {runResult && (

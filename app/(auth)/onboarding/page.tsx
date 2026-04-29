@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createOrganization } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,45 +34,18 @@ export default function OnboardingPage() {
   } = useForm<WorkspaceForm>({ resolver: zodResolver(workspaceSchema) });
 
   async function createWorkspace(data: WorkspaceForm) {
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const result = await createOrganization(data.name);
 
-    if (!user) {
-      router.push("/login");
+    if ("error" in result) {
+      if (result.error === "Not authenticated") {
+        router.push("/login");
+        return;
+      }
+      alert(result.error);
       return;
     }
 
-    const slug = data.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-
-    const { data: org, error: orgError } = await supabase
-      .from("organizations")
-      .insert({ name: data.name, slug })
-      .select()
-      .single();
-
-    if (orgError) {
-      alert(orgError.message);
-      return;
-    }
-
-    const { error: memberError } = await supabase
-      .from("memberships")
-      .insert({ organization_id: org.id, user_id: user.id, role: "owner" });
-
-    if (memberError) {
-      alert(memberError.message);
-      return;
-    }
-
-    // Seed default decision rules via RPC
-    await supabase.rpc("seed_default_rules", { p_org_id: org.id });
-
-    setOrgId(org.id);
+    setOrgId(result.orgId);
     setStep("data");
   }
 

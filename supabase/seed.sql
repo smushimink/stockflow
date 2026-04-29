@@ -7,11 +7,11 @@ DECLARE
   v_user_id UUID := 'b2c3d4e5-f6a7-8901-bcde-f12345678901';
 
   -- Supplier IDs
-  v_sup_1 UUID := uuid_generate_v4();
-  v_sup_2 UUID := uuid_generate_v4();
-  v_sup_3 UUID := uuid_generate_v4();
-  v_sup_4 UUID := uuid_generate_v4();
-  v_sup_5 UUID := uuid_generate_v4();
+  v_sup_1 UUID := gen_random_uuid();
+  v_sup_2 UUID := gen_random_uuid();
+  v_sup_3 UUID := gen_random_uuid();
+  v_sup_4 UUID := gen_random_uuid();
+  v_sup_5 UUID := gen_random_uuid();
 
   v_prod RECORD;
   v_order_id UUID;
@@ -139,7 +139,7 @@ INSERT INTO customers (organization_id, name, email, company, total_orders, last
 FOR v_day_offset IN 0..89 LOOP
   -- 2-3 orders per day
   FOR i IN 1..2 + (CASE WHEN v_day_offset % 7 IN (5,6) THEN 1 ELSE 0 END) LOOP
-    v_order_id := uuid_generate_v4();
+    v_order_id := gen_random_uuid();
 
     INSERT INTO sales_orders (id, organization_id, customer_id, order_number, status, subtotal, total, ordered_at)
     SELECT

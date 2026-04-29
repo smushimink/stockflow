@@ -8,7 +8,7 @@ CREATE EXTENSION IF NOT EXISTS "pg_net";
 -- ============================================================
 
 CREATE TABLE organizations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   slug TEXT NOT NULL UNIQUE,
   plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free', 'starter', 'pro', 'business')),
@@ -18,7 +18,7 @@ CREATE TABLE organizations (
 );
 
 CREATE TABLE memberships (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   role TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('owner', 'manager', 'buyer', 'sales', 'warehouse', 'viewer')),
@@ -34,7 +34,7 @@ CREATE INDEX idx_memberships_org ON memberships(organization_id);
 -- ============================================================
 
 CREATE TABLE suppliers (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   code TEXT,
@@ -58,7 +58,7 @@ CREATE INDEX idx_suppliers_org ON suppliers(organization_id);
 -- ============================================================
 
 CREATE TABLE products (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   supplier_id UUID REFERENCES suppliers(id) ON DELETE SET NULL,
   sku TEXT NOT NULL,
@@ -96,7 +96,7 @@ CREATE INDEX idx_products_external ON products(organization_id, external_id);
 -- ============================================================
 
 CREATE TABLE customers (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   email TEXT,
@@ -120,7 +120,7 @@ CREATE INDEX idx_customers_org ON customers(organization_id);
 -- ============================================================
 
 CREATE TABLE sales_orders (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
   order_number TEXT NOT NULL,
@@ -142,7 +142,7 @@ CREATE INDEX idx_sales_orders_org_date ON sales_orders(organization_id, ordered_
 CREATE INDEX idx_sales_orders_customer ON sales_orders(customer_id);
 
 CREATE TABLE sales_order_items (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   order_id UUID NOT NULL REFERENCES sales_orders(id) ON DELETE CASCADE,
   product_id UUID REFERENCES products(id) ON DELETE SET NULL,
@@ -164,7 +164,7 @@ CREATE INDEX idx_soi_org ON sales_order_items(organization_id);
 -- ============================================================
 
 CREATE TABLE purchase_orders (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   supplier_id UUID REFERENCES suppliers(id) ON DELETE SET NULL,
   order_number TEXT NOT NULL,
@@ -183,7 +183,7 @@ CREATE INDEX idx_po_org ON purchase_orders(organization_id);
 CREATE INDEX idx_po_supplier ON purchase_orders(supplier_id);
 
 CREATE TABLE purchase_order_items (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   order_id UUID NOT NULL REFERENCES purchase_orders(id) ON DELETE CASCADE,
   product_id UUID REFERENCES products(id) ON DELETE SET NULL,
@@ -203,7 +203,7 @@ CREATE INDEX idx_poi_product ON purchase_order_items(product_id);
 -- ============================================================
 
 CREATE TABLE inventory_snapshots (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
   snapshot_date DATE NOT NULL,
@@ -222,7 +222,7 @@ CREATE INDEX idx_snapshots_product ON inventory_snapshots(product_id, snapshot_d
 -- ============================================================
 
 CREATE TABLE product_metrics (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
   calculated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -251,7 +251,7 @@ CREATE INDEX idx_metrics_product ON product_metrics(product_id);
 -- ============================================================
 
 CREATE TABLE decision_rules (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   rule_type TEXT NOT NULL,
   name TEXT NOT NULL,
@@ -270,7 +270,7 @@ CREATE INDEX idx_rules_org ON decision_rules(organization_id);
 -- ============================================================
 
 CREATE TABLE decision_alerts (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   rule_type TEXT NOT NULL,
   related_product_id UUID REFERENCES products(id) ON DELETE CASCADE,
@@ -302,7 +302,7 @@ CREATE INDEX idx_alerts_rule ON decision_alerts(organization_id, rule_type);
 -- ============================================================
 
 CREATE TABLE integrations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   provider TEXT NOT NULL CHECK (provider IN ('shopify', 'xero', 'myob', 'amazon', 'ebay', 'square', 'lightspeed', 'csv', 'zapier')),
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'error', 'disconnected')),
@@ -320,7 +320,7 @@ CREATE TABLE integrations (
 CREATE INDEX idx_integrations_org ON integrations(organization_id);
 
 CREATE TABLE integration_field_mappings (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   integration_id UUID NOT NULL REFERENCES integrations(id) ON DELETE CASCADE,
   source_field TEXT NOT NULL,
@@ -334,7 +334,7 @@ CREATE TABLE integration_field_mappings (
 -- ============================================================
 
 CREATE TABLE data_provenance (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   table_name TEXT NOT NULL,
   record_id UUID NOT NULL,
