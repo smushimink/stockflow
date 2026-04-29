@@ -20,6 +20,7 @@ export interface Alert {
 
 export interface DecisionRule {
   rule_type: string;
+  defaultConfig: Record<string, unknown>;
   evaluate(orgId: string, config: Record<string, unknown>): Promise<Alert[]>;
 }
 

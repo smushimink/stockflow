@@ -9,6 +9,7 @@ interface DeadStockConfig {
 
 export const deadStockRule: DecisionRule = {
   rule_type: "dead_stock",
+  defaultConfig: { yellow_days: 60, orange_days: 90, red_days: 180 },
 
   async evaluate(orgId: string, config: Record<string, unknown>): Promise<Alert[]> {
     const { yellow_days = 60, orange_days = 90, red_days = 180 } = config as DeadStockConfig;
