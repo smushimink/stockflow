@@ -1,5 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Alert, DecisionRule } from "@/lib/decisions/types";
+import type { Alert, DecisionRule, RuleContext } from "@/lib/decisions/types";
+import { segmentsToText } from "@/lib/decisions/reasoning";
+import type { ReasoningSegment } from "@/lib/decisions/reasoning";
 
 interface ChurnConfig {
   churn_factor?: number;
@@ -10,7 +12,7 @@ export const churnRule: DecisionRule = {
   rule_type: "customer_churn",
   defaultConfig: { churn_factor: 1.5, min_orders: 3 },
 
-  async evaluate(orgId: string, config: Record<string, unknown>): Promise<Alert[]> {
+  async evaluate({ orgId, config }: RuleContext): Promise<Alert[]> {
     const { churn_factor = 1.5, min_orders = 3 } = config as ChurnConfig;
 
     const supabase = createAdminClient();
@@ -37,6 +39,37 @@ export const churnRule: DecisionRule = {
 
       if (days_since <= threshold) continue;
 
+      const overdueFactor = days_since / avg_interval;
+      const lastOrderLabel = new Date(last_order_at).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" });
+
+      const trail: ReasoningSegment[] = [
+        {
+          type: "data",
+          label: "Order history",
+          text: `${c.total_orders} lifetime orders · avg $${((c.total_spent as number) / (c.total_orders as number)).toFixed(0)}/order · total spent $${Math.round(c.total_spent as number).toLocaleString("en-AU")}.`,
+        },
+        {
+          type: "data",
+          label: "Order pattern",
+          text: `Average order interval: ${Math.round(avg_interval)} days. Last order: ${lastOrderLabel} (${days_since} days ago).`,
+        },
+        {
+          type: "rule",
+          label: "Churn factor",
+          text: `Churn threshold = avg interval × ${churn_factor} = ${Math.round(avg_interval)} × ${churn_factor} = ${threshold.toFixed(0)} days.`,
+        },
+        {
+          type: "calc",
+          label: "Overdue",
+          text: `${days_since} days since last order = ${overdueFactor.toFixed(1)}× their normal interval.`,
+        },
+        {
+          type: "verdict",
+          label: "Trigger",
+          text: `Exceeded ${threshold.toFixed(0)}-day threshold by ${(days_since - threshold).toFixed(0)} days. Customer likely churning.`,
+        },
+      ];
+
       alerts.push({
         organization_id: orgId,
         rule_type: "customer_churn",
@@ -44,7 +77,7 @@ export const churnRule: DecisionRule = {
         severity: "orange",
         title: `Customer at risk: ${c.name as string}`,
         summary: `${days_since}d since last order · normally every ${Math.round(avg_interval)}d`,
-        reasoning: `${c.name as string} usually orders every ${Math.round(avg_interval)} days. It has been ${days_since} days since their last order — ${(days_since / avg_interval).toFixed(1)}× their normal interval. Churn threshold: ${threshold.toFixed(0)} days.`,
+        reasoning: segmentsToText(trail),
         suggested_action: "Mark as contacted",
         suggested_value: c.total_spent as number,
         metadata: {
@@ -55,6 +88,7 @@ export const churnRule: DecisionRule = {
           total_spent: c.total_spent,
           last_order_at,
           customer_name: c.name,
+          reasoning_trail: trail,
         },
       });
     }

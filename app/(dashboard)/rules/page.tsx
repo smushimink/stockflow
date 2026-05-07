@@ -14,12 +14,15 @@ export default async function RulesPage() {
 
   const { data: membership } = await supabase
     .from("memberships")
-    .select("organization_id")
+    .select("organization_id, organizations(plan)")
     .eq("user_id", user.id)
     .limit(1)
     .single();
 
   if (!membership) redirect("/onboarding");
+
+  const orgRaw = membership.organizations as { plan: string } | { plan: string }[] | null;
+  const orgPlan = (Array.isArray(orgRaw) ? orgRaw[0]?.plan : orgRaw?.plan) ?? "starter";
 
   const { data: rules } = await supabase
     .from("decision_rules")
@@ -39,6 +42,7 @@ export default async function RulesPage() {
       <RulesClient
         rules={rules ?? []}
         orgId={membership.organization_id}
+        plan={orgPlan as import("@/lib/plans").PlanId}
       />
     </div>
   );

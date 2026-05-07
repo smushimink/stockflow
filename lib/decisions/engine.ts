@@ -7,7 +7,10 @@ import { churnRule } from "@/lib/decisions/rules/churn";
 import { supplierScorecardRule } from "@/lib/decisions/rules/supplier-score";
 import { ecommercePipelineRule } from "@/lib/decisions/rules/ecommerce-pipeline";
 import { seasonalForecastRule } from "@/lib/decisions/rules/seasonal-forecast";
-import type { Alert, DecisionRule } from "@/lib/decisions/types";
+import { customerProfitabilityRule } from "@/lib/decisions/rules/customer-profitability";
+import { elasticityPricingRule } from "@/lib/decisions/rules/elasticity-pricing";
+import type { Alert, BusinessContext, MarketSignal, DecisionRule } from "@/lib/decisions/types";
+import { DEFAULT_BUSINESS_CONTEXT } from "@/lib/decisions/types";
 
 const registeredRules: DecisionRule[] = [
   reorderRule,
@@ -18,6 +21,8 @@ const registeredRules: DecisionRule[] = [
   supplierScorecardRule,
   ecommercePipelineRule,
   seasonalForecastRule,
+  customerProfitabilityRule,
+  elasticityPricingRule,
 ];
 
 async function upsertAlert(
@@ -97,12 +102,96 @@ async function upsertAlert(
   return !error;
 }
 
+async function loadOrgContext(orgId: string, supabase: ReturnType<typeof createAdminClient>) {
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("business_context")
+    .eq("id", orgId)
+    .single();
+
+  const businessContext: BusinessContext = {
+    ...DEFAULT_BUSINESS_CONTEXT,
+    ...((org?.business_context as Partial<BusinessContext>) ?? {}),
+  };
+
+  const today = new Date().toISOString().split("T")[0];
+  const { data: marketSignalsRows } = await supabase
+    .from("market_signals")
+    .select("id, signal_type, source, value, effective_from, effective_until, notes, created_at")
+    .eq("organization_id", orgId)
+    .or(`effective_until.is.null,effective_until.gte.${today}`);
+
+  const marketSignals: MarketSignal[] = (marketSignalsRows ?? []) as MarketSignal[];
+  return { businessContext, marketSignals };
+}
+
+// Run a single rule and upsert its alerts. Returns alert counts.
+export async function runSingleRule(
+  orgId: string,
+  ruleType: string,
+  configOverride?: Record<string, unknown>
+): Promise<{ total: number; newAlerts: number }> {
+  const supabase = createAdminClient();
+  const rule = registeredRules.find((r) => r.rule_type === ruleType);
+  if (!rule) return { total: 0, newAlerts: 0 };
+
+  const { data: dbRule } = await supabase
+    .from("decision_rules")
+    .select("enabled, config")
+    .eq("organization_id", orgId)
+    .eq("rule_type", ruleType)
+    .maybeSingle();
+
+  if (dbRule && !dbRule.enabled && !configOverride) return { total: 0, newAlerts: 0 };
+
+  const config = configOverride ?? (dbRule ? (dbRule.config as Record<string, unknown>) : rule.defaultConfig);
+  const { businessContext, marketSignals } = await loadOrgContext(orgId, supabase);
+
+  const alerts = await rule.evaluate({ orgId, config, businessContext, marketSignals });
+
+  let newAlerts = 0;
+  for (const alert of alerts) {
+    const isNew = await upsertAlert(supabase, orgId, alert);
+    if (isNew) newAlerts++;
+  }
+  return { total: alerts.length, newAlerts };
+}
+
+// Dry-run a single rule with an optional config override — does NOT persist alerts.
+export async function runSingleRuleDryRun(
+  orgId: string,
+  ruleType: string,
+  configOverride?: Record<string, unknown>
+): Promise<{ total: number }> {
+  const supabase = createAdminClient();
+  const rule = registeredRules.find((r) => r.rule_type === ruleType);
+  if (!rule) return { total: 0 };
+
+  const { data: dbRule } = await supabase
+    .from("decision_rules")
+    .select("config")
+    .eq("organization_id", orgId)
+    .eq("rule_type", ruleType)
+    .maybeSingle();
+
+  const config = configOverride ?? (dbRule ? (dbRule.config as Record<string, unknown>) : rule.defaultConfig);
+  const { businessContext, marketSignals } = await loadOrgContext(orgId, supabase);
+
+  try {
+    const alerts = await rule.evaluate({ orgId, config, businessContext, marketSignals });
+    return { total: alerts.length };
+  } catch {
+    return { total: 0 };
+  }
+}
+
 export async function runEngine(orgId: string): Promise<{
   newAlerts: number;
   total: number;
   byRule: Record<string, number>;
 }> {
   const supabase = createAdminClient();
+  const { businessContext, marketSignals } = await loadOrgContext(orgId, supabase);
 
   // Load DB rules (may be empty for a fresh org — fall back to defaultConfig)
   const { data: dbRules } = await supabase
@@ -127,7 +216,7 @@ export async function runEngine(orgId: string): Promise<{
       : rule.defaultConfig;
 
     try {
-      const alerts = await rule.evaluate(orgId, config);
+      const alerts = await rule.evaluate({ orgId, config, businessContext, marketSignals });
       byRule[rule.rule_type] = alerts.length;
       allAlerts = allAlerts.concat(alerts);
     } catch (err) {

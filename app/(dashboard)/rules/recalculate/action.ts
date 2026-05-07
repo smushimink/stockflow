@@ -5,6 +5,7 @@ import {
   recalculateAllMetrics,
   recalculateAbcClassification,
   recalculateCustomerMetrics,
+  recalculateSupplierMetrics,
 } from "@/lib/metrics/calculator";
 
 export type RecalculateResult =
@@ -12,6 +13,7 @@ export type RecalculateResult =
       products_updated: number;
       abc_updated: number;
       customers_updated: number;
+      suppliers_updated: number;
       duration_ms: number;
     }
   | { error: string };
@@ -39,11 +41,13 @@ export async function recalculateMetrics(): Promise<RecalculateResult> {
     const products_updated = await recalculateAllMetrics(orgId);
     const abc_updated = await recalculateAbcClassification(orgId);
     const customers_updated = await recalculateCustomerMetrics(orgId);
+    const suppliers_updated = await recalculateSupplierMetrics(orgId);
 
     return {
       products_updated,
       abc_updated,
       customers_updated,
+      suppliers_updated,
       duration_ms: Date.now() - start,
     };
   } catch (e) {

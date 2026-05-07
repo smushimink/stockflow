@@ -7,6 +7,8 @@ export const RULE_TYPES = {
   SUPPLIER_SCORECARD: "supplier_scorecard",
   ECOMMERCE_PIPELINE: "ecommerce_pipeline",
   SEASONAL_PREORDER: "seasonal_preorder",
+  CUSTOMER_PROFITABILITY: "customer_profitability",
+  ELASTICITY_PRICING: "elasticity_pricing",
 } as const;
 
 export type RuleType = (typeof RULE_TYPES)[keyof typeof RULE_TYPES];

@@ -22,6 +22,17 @@ export function formatNumber(value: number): string {
   return new Intl.NumberFormat("en-AU").format(value);
 }
 
+export function formatAgo(dateStr: string): string {
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diffMs / 60_000);
+  const hours = Math.floor(mins / 60);
+  const days = Math.floor(hours / 24);
+  if (days > 0) return `${days} day${days !== 1 ? "s" : ""} ago`;
+  if (hours > 0) return `${hours}h ago`;
+  if (mins > 0) return `${mins}m ago`;
+  return "just now";
+}
+
 /** Supabase returns joined rows as arrays in the untyped client; normalize to single object */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function firstOf<T>(v: unknown): T | null {

@@ -6,7 +6,7 @@ interface SeverityGroupProps {
   title: string;
   severity: "red" | "orange" | "yellow" | "green";
   alerts: AlertWithProduct[];
-  emptyMessage?: string;
+  ruleConfigs: Record<string, Record<string, unknown>>;
 }
 
 const severityStyles = {
@@ -16,10 +16,10 @@ const severityStyles = {
   green: { dot: "bg-[#4D7B3D]", count: "text-[#4D7B3D]" },
 };
 
-export function SeverityGroup({ title, severity, alerts, emptyMessage }: SeverityGroupProps) {
+export function SeverityGroup({ title, severity, alerts, ruleConfigs }: SeverityGroupProps) {
   const styles = severityStyles[severity];
 
-  if (!alerts.length && !emptyMessage) return null;
+  if (!alerts.length) return null;
 
   return (
     <section className="space-y-2">
@@ -31,19 +31,11 @@ export function SeverityGroup({ title, severity, alerts, emptyMessage }: Severit
         </span>
       </div>
 
-      {alerts.length > 0 ? (
-        <div className="space-y-2">
-          {alerts.map((alert) => (
-            <ActionCard key={alert.id} alert={alert} />
-          ))}
-        </div>
-      ) : (
-        emptyMessage && (
-          <div className="px-4 py-3 rounded-lg border border-[#E5E5E2] bg-white text-sm text-[#6B6B66]">
-            {emptyMessage}
-          </div>
-        )
-      )}
+      <div className="space-y-2">
+        {alerts.map((alert) => (
+          <ActionCard key={alert.id} alert={alert} ruleConfig={ruleConfigs[alert.rule_type] ?? {}} />
+        ))}
+      </div>
     </section>
   );
 }

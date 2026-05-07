@@ -15,6 +15,8 @@ import {
   Plug,
   LogOut,
   Search,
+  BarChart2,
+  Building2,
 } from "lucide-react";
 
 interface NavItem {
@@ -41,11 +43,13 @@ export function Sidebar({ urgentCount = 0, productCount = 0, userEmail }: Sideba
     { href: "/sales", label: "Sales", icon: TrendingUp },
     { href: "/customers", label: "Customers", icon: Users },
     { href: "/suppliers", label: "Suppliers", icon: Truck },
+    { href: "/insights", label: "Insights", icon: BarChart2 },
   ];
 
   const setupNav: NavItem[] = [
     { href: "/rules", label: "Rules", icon: Settings2 },
     { href: "/integrations", label: "Integrations", icon: Plug },
+    { href: "/settings/business", label: "Business profile", icon: Building2 },
   ];
 
   async function signOut() {

@@ -72,6 +72,8 @@ export interface Database {
           status: "active" | "discontinued" | "draft";
           listed_online: boolean;
           abc_class: "A" | "B" | "C" | null;
+          xyz_class: "X" | "Y" | "Z" | null;
+          abc_xyz_class: string | null;
           season_tags: string[];
           category: string | null;
           tags: string[];
@@ -79,6 +81,7 @@ export interface Database {
           barcode: string | null;
           weight_kg: number | null;
           notes: string | null;
+          rule_overrides: Json | null;
           created_at: string;
           updated_at: string;
         };
@@ -196,6 +199,8 @@ export interface Database {
           avg_platform_fee: number;
           avg_discount: number;
           abc_class: "A" | "B" | "C" | null;
+          xyz_class: "X" | "Y" | "Z" | null;
+          abc_xyz_class: string | null;
           cash_tied_up: number;
         };
         Insert: Omit<Database["public"]["Tables"]["product_metrics"]["Row"], "id"> & { id?: string };

@@ -1,5 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Alert, DecisionRule } from "@/lib/decisions/types";
+import type { Alert, DecisionRule, RuleContext } from "@/lib/decisions/types";
+import { segmentsToText } from "@/lib/decisions/reasoning";
+import type { ReasoningSegment } from "@/lib/decisions/reasoning";
 
 interface SupplierScorecardConfig {
   lead_time_variance_threshold?: number;
@@ -15,7 +17,7 @@ export const supplierScorecardRule: DecisionRule = {
     on_time_rate_threshold: 0.8,
   },
 
-  async evaluate(orgId: string, config: Record<string, unknown>): Promise<Alert[]> {
+  async evaluate({ orgId, config }: RuleContext): Promise<Alert[]> {
     const {
       lead_time_variance_threshold = 1.3,
       fill_rate_threshold = 0.9,
@@ -60,7 +62,7 @@ export const supplierScorecardRule: DecisionRule = {
       const supplierPos = poBySupplier.get(supplier.id as string) ?? [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const received = supplierPos.filter((po: any) => po.status === "received");
-      if (received.length === 0) continue; // insufficient data
+      if (received.length === 0) continue;
 
       // Lead time: days between created_at and received_at
       const lead_times = received
@@ -118,6 +120,43 @@ export const supplierScorecardRule: DecisionRule = {
         (sum: number, po: any) => sum + ((po.total as number) ?? 0), 0
       );
 
+      // ── Reasoning trail ──────────────────────────────────────────────────────
+
+      const trail: ReasoningSegment[] = [
+        {
+          type: "historical",
+          label: "Data foundation",
+          text: `Analysis based on ${received.length} received POs over the last 12 months (total spend: $${Math.round(total_spend).toLocaleString("en-AU")}).`,
+        },
+        {
+          type: "data",
+          label: "Lead time",
+          text: `Avg actual lead time: ${avg_lead_time_real.toFixed(1)}d vs promised ${supplier.lead_time_days}d (${((lead_time_variance - 1) * 100).toFixed(0)}% variance${lead_time_variance > lead_time_variance_threshold ? ` — exceeds ${((lead_time_variance_threshold - 1) * 100).toFixed(0)}% threshold` : ""}).`,
+        },
+        {
+          type: "data",
+          label: "Fill rate",
+          text: `Fill rate: ${(fill_rate * 100).toFixed(0)}% (${totals.received_qty} of ${totals.ordered} units received)${fill_rate < fill_rate_threshold ? ` — below ${(fill_rate_threshold * 100).toFixed(0)}% threshold` : ""}.`,
+        },
+        {
+          type: "data",
+          label: "On-time rate",
+          text: withExpected.length > 0
+            ? `On-time delivery: ${(on_time_rate * 100).toFixed(0)}% (${on_time_count} of ${withExpected.length} POs)${on_time_rate < on_time_rate_threshold ? ` — below ${(on_time_rate_threshold * 100).toFixed(0)}% threshold` : ""}.`
+            : `On-time rate: insufficient data (no expected dates recorded).`,
+        },
+        {
+          type: "rule",
+          label: "Thresholds",
+          text: `Thresholds: on-time ≥ ${(on_time_rate_threshold * 100).toFixed(0)}%, fill rate ≥ ${(fill_rate_threshold * 100).toFixed(0)}%, lead time variance ≤ ${lead_time_variance_threshold}×.`,
+        },
+        {
+          type: "verdict",
+          label: "Trigger",
+          text: `${issues.length} of 3 scorecard metrics below threshold: ${issues.join("; ")}.`,
+        },
+      ];
+
       alerts.push({
         organization_id: orgId,
         rule_type: "supplier_scorecard",
@@ -125,7 +164,7 @@ export const supplierScorecardRule: DecisionRule = {
         severity: "yellow",
         title: `Supplier issue: ${supplier.name as string}`,
         summary: issues.join(" · "),
-        reasoning: `Based on ${received.length} received orders in last 12 months. Avg lead time: ${avg_lead_time_real.toFixed(1)}d vs promised ${supplier.lead_time_days}d. Fill rate: ${(fill_rate * 100).toFixed(0)}%. On-time: ${(on_time_rate * 100).toFixed(0)}%.`,
+        reasoning: segmentsToText(trail),
         suggested_action: "Review supplier",
         metadata: {
           lead_time_variance: Math.round(lead_time_variance * 100) / 100,
@@ -136,6 +175,7 @@ export const supplierScorecardRule: DecisionRule = {
           total_orders: received.length,
           total_spend: Math.round(total_spend * 100) / 100,
           supplier_name: supplier.name,
+          reasoning_trail: trail,
         },
       });
     }
