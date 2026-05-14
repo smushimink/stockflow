@@ -35,7 +35,7 @@ export default async function RulesPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-600 text-[#1A1A17]">Rules</h1>
         <p className="text-sm text-[#6B6B66] mt-1">
-          Configure when StockFlow raises alerts and what thresholds to use.
+          Configure when ArachNet raises alerts and what thresholds to use.
         </p>
       </div>
 

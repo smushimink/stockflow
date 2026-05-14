@@ -1,10 +1,10 @@
-# StockFlow
+# ArachNet
 
 Decision intelligence for wholesale and product-based businesses. Built on Next.js 15 App Router, Supabase (PostgreSQL + RLS), and Tailwind CSS.
 
 ## What it does
 
-StockFlow answers the 5 real money questions of a wholesale business, in under 5 seconds per page:
+ArachNet answers the 5 real money questions of a wholesale business, in under 5 seconds per page:
 
 | Question | Where |
 |---|---|

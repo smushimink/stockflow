@@ -1,5 +1,5 @@
 /**
- * StockFlow smoke test
+ * ArachNet smoke test
  *
  * DEV-ONLY — uses SUPABASE_SERVICE_ROLE_KEY to create an authenticated session.
  * Never run this against production with a real user's data without consent.
@@ -83,7 +83,7 @@ async function checkPage(
     const res = await fetch(`${BASE_URL}${path}`, {
       headers: {
         cookie: `sb-access-token=${accessToken}`,
-        "user-agent": "StockFlow-SmokeTest/1.0",
+        "user-agent": "ArachNet-SmokeTest/1.0",
       },
       redirect: "manual",
     });
@@ -118,7 +118,7 @@ async function firstId(table: string): Promise<string | null> {
 
 async function main() {
   console.log("\n╔═══════════════════════════════════════╗");
-  console.log("║     StockFlow Smoke Test              ║");
+  console.log("║     ArachNet Smoke Test              ║");
   console.log(`╚═══════════════════════════════════════╝`);
   console.log(`  Target: ${BASE_URL}`);
   console.log(`  Supabase: ${SUPABASE_URL.substring(0, 30)}…`);

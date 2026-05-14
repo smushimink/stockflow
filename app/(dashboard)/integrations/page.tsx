@@ -45,7 +45,7 @@ export default async function IntegrationsPage() {
     <div className="max-w-3xl mx-auto px-6 py-8 space-y-8">
       <div>
         <h1 className="text-2xl font-600 text-[#1A1A17]">Integrations</h1>
-        <p className="text-sm text-[#6B6B66] mt-1">Connect your data sources to keep StockFlow up to date.</p>
+        <p className="text-sm text-[#6B6B66] mt-1">Connect your data sources to keep ArachNet up to date.</p>
       </div>
 
       {/* CSV import CTA */}

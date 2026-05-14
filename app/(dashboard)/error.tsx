@@ -16,7 +16,7 @@ export default function DashboardError({
   return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="text-center space-y-4 max-w-sm px-6">
-        <p className="text-xs font-600 text-[#6B6B66] uppercase tracking-wider">StockFlow</p>
+        <p className="text-xs font-600 text-[#6B6B66] uppercase tracking-wider">ArachNet</p>
         <h2 className="text-xl font-600 text-[#1A1A17]">Something went wrong</h2>
         <p className="text-sm text-[#6B6B66]">
           {error.message || "An unexpected error occurred. Please try again."}

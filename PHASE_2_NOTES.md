@@ -115,7 +115,7 @@ const RULE_META = {
 ## Known limitations
 
 ### Metrics simplifications
-- **Real margin** (`real_margin_pct`) uses `(selling_price − unit_cost − avg_discount) / selling_price`. It does not include freight, duties, storage, or shrinkage costs. These are typically tracked at the order level but not yet modelled in StockFlow.
+- **Real margin** (`real_margin_pct`) uses `(selling_price − unit_cost − avg_discount) / selling_price`. It does not include freight, duties, storage, or shrinkage costs. These are typically tracked at the order level but not yet modelled in ArachNet.
 - **Unit cost** is the last recorded cost price on the `products` table, not a weighted average of inventory layers (FIFO/AVCO). If costs fluctuate frequently, `product_metrics.cogs_90d` may understate or overstate actual COGS.
 - **Avg inventory value** uses current `stock_on_hand × unit_cost` as a proxy; it does not use historical inventory snapshots.
 

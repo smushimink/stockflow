@@ -2,8 +2,8 @@ import Link from "next/link";
 import { MarketingNav } from "@/components/marketing/marketing-nav";
 
 export const metadata = {
-  title: "Contact — Stockflow",
-  description: "Get in touch with the Stockflow team.",
+  title: "Contact — ArachNet",
+  description: "Get in touch with the ArachNet team.",
 };
 
 export default function ContactPage() {
@@ -20,11 +20,11 @@ export default function ContactPage() {
           </p>
           <div className="grid sm:grid-cols-2 gap-4">
             <a
-              href="mailto:hello@getstockflow.com"
+              href="mailto:hello@getarachnet.com"
               className="p-5 rounded-xl border border-[#E5E5E2] bg-white hover:border-[#1A1A17] transition-colors"
             >
               <p className="text-xs font-600 text-[#9A9A93] uppercase tracking-widest mb-1">Email</p>
-              <p className="text-[15px] font-500 text-[#1A1A17]">hello@getstockflow.com</p>
+              <p className="text-[15px] font-500 text-[#1A1A17]">hello@getarachnet.com</p>
               <p className="text-[13px] text-[#5C5C57] mt-1">We reply within 1 business day</p>
             </a>
             <Link

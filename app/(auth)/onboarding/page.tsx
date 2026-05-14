@@ -192,7 +192,7 @@ export default function OnboardingPage() {
       {/* Header */}
       <header className="px-8 py-5 border-b border-[#E5E5E2] bg-white">
         <div className="max-w-xl mx-auto flex items-center justify-between">
-          <span className="font-600 text-[#1A1A17]">StockFlow</span>
+          <span className="font-600 text-[#1A1A17]">ArachNet</span>
           <StepIndicator current={step} />
         </div>
       </header>
@@ -306,7 +306,7 @@ export default function OnboardingPage() {
               <div>
                 <h1 className="text-2xl font-600 text-[#1A1A17]">Tell us about your business</h1>
                 <p className="mt-1 text-sm text-[#6B6B66]">
-                  StockFlow uses this to calibrate its decision rules. You can update everything later in Settings.
+                  ArachNet uses this to calibrate its decision rules. You can update everything later in Settings.
                 </p>
               </div>
 
@@ -526,7 +526,7 @@ export default function OnboardingPage() {
               <div>
                 <h1 className="text-2xl font-600 text-[#1A1A17]">You&apos;re all set</h1>
                 <p className="mt-2 text-sm text-[#6B6B66] max-w-sm">
-                  Your workspace is ready. StockFlow will analyse your data and surface your first decisions within a few minutes.
+                  Your workspace is ready. ArachNet will analyse your data and surface your first decisions within a few minutes.
                 </p>
               </div>
               <div className="space-y-2 text-left w-full max-w-sm">

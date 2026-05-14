@@ -17,6 +17,7 @@ import {
   Search,
   BarChart2,
   Building2,
+  CreditCard,
 } from "lucide-react";
 
 interface NavItem {
@@ -50,6 +51,7 @@ export function Sidebar({ urgentCount = 0, productCount = 0, userEmail }: Sideba
     { href: "/rules", label: "Rules", icon: Settings2 },
     { href: "/integrations", label: "Integrations", icon: Plug },
     { href: "/settings/business", label: "Business profile", icon: Building2 },
+    { href: "/settings/billing", label: "Billing", icon: CreditCard },
   ];
 
   async function signOut() {
@@ -62,7 +64,7 @@ export function Sidebar({ urgentCount = 0, productCount = 0, userEmail }: Sideba
     <aside className="w-[200px] shrink-0 flex flex-col h-screen bg-white border-r border-[#E5E5E2] sticky top-0">
       {/* Brand */}
       <div className="px-4 py-5 border-b border-[#E5E5E2]">
-        <span className="text-sm font-600 text-[#1A1A17] tracking-tight">StockFlow</span>
+        <span className="text-sm font-600 text-[#1A1A17] tracking-tight">ArachNet</span>
       </div>
 
       {/* Search hint (Cmd+K) */}

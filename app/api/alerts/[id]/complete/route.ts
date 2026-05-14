@@ -109,7 +109,7 @@ export async function POST(
     const timestamp = new Date().toLocaleDateString("en-AU", {
       day: "numeric", month: "short", year: "numeric",
     });
-    const newEntry = `[${timestamp}] Called — marked as contacted via StockFlow alert`;
+    const newEntry = `[${timestamp}] Called — marked as contacted via ArachNet alert`;
     const existing = (customer?.notes as string | null) ?? "";
     const updated = existing ? `${newEntry}\n\n${existing}` : newEntry;
 

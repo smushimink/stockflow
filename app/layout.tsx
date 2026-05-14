@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "StockFlow",
+  title: "ArachNet",
   description: "Decision intelligence for product-based businesses",
 };
 

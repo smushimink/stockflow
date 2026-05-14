@@ -5,7 +5,7 @@ import type { BusinessContext } from "@/lib/decisions/types";
 import { BusinessProfileForm } from "@/components/settings/business-profile-form";
 import { redirect } from "next/navigation";
 
-export const metadata = { title: "Business profile · StockFlow" };
+export const metadata = { title: "Business profile · ArachNet" };
 
 export default async function BusinessProfilePage() {
   const supabase = await createClient();
@@ -43,7 +43,7 @@ export default async function BusinessProfilePage() {
       <div>
         <h1 className="text-xl font-600 text-[#1A1A17]">Business profile</h1>
         <p className="mt-1 text-sm text-[#6B6B66]">
-          These settings shape how StockFlow's decision rules are calibrated for your business.
+          These settings shape how ArachNet's decision rules are calibrated for your business.
           An Asian grocer has different dead stock thresholds than a homeware importer.
         </p>
       </div>

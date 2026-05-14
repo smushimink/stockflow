@@ -10,7 +10,7 @@ import {
 const FAQS = [
   {
     q: "How is this different from my inventory management software (Cin7, Unleashed, DEAR)?",
-    a: "Those tools track inventory. Stockflow makes decisions about it. Most customers keep their existing IMS and add Stockflow on top — we read from it, not replace it.",
+    a: "Those tools track inventory. ArachNet makes decisions about it. Most customers keep their existing IMS and add ArachNet on top — we read from it, not replace it.",
   },
   {
     q: "Do you connect to my accounting?",

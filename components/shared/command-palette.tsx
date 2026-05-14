@@ -50,7 +50,7 @@ interface RecentItem {
 
 // ── Recent localStorage helpers ──────────────────────────────────────────────
 
-const RECENT_KEY = "stockflow:recent";
+const RECENT_KEY = "arachnet:recent";
 const RECENT_MAX = 5;
 
 function readRecent(): RecentItem[] {
