@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -8,7 +9,31 @@ const schema = z.object({
   planKey: z.enum(["starter", "pro", "business"]),
 });
 
+// Simple in-memory rate limiter: max 10 requests per IP per 60s window
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + 60_000 });
+    return false;
+  }
+  entry.count++;
+  return entry.count > 10;
+}
+
 export async function POST(request: Request) {
+  const headersList = await headers();
+  const ip =
+    headersList.get("x-forwarded-for")?.split(",")[0].trim() ??
+    headersList.get("x-real-ip") ??
+    "unknown";
+
+  if (isRateLimited(ip)) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   // Auth check
   const supabase = await createClient();
   const {

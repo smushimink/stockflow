@@ -32,10 +32,21 @@ export async function POST(
 
   const admin = createAdminClient();
 
+  // Verify membership before any data access
+  const { data: membership } = await supabase
+    .from("memberships")
+    .select("organization_id")
+    .eq("user_id", user.id)
+    .limit(1)
+    .single();
+
+  if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
   const { data: po } = await supabase
     .from("purchase_orders")
     .select("id, organization_id, status")
     .eq("id", id)
+    .eq("organization_id", membership.organization_id)
     .single();
 
   if (!po) return NextResponse.json({ error: "Not found" }, { status: 404 });

@@ -31,10 +31,21 @@ export async function PATCH(
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
+  // Verify membership before any data access
+  const { data: membership } = await supabase
+    .from("memberships")
+    .select("organization_id")
+    .eq("user_id", user.id)
+    .limit(1)
+    .single();
+
+  if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
   const { data: po } = await supabase
     .from("purchase_orders")
     .select("id, status, organization_id")
     .eq("id", id)
+    .eq("organization_id", membership.organization_id)
     .single();
 
   if (!po) return NextResponse.json({ error: "Not found" }, { status: 404 });
